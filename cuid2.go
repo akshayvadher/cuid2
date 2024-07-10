@@ -50,7 +50,8 @@ func hash(input string) string {
 func createFingerprint() string {
 	host, _ := os.Hostname()
 	userHome, _ := os.UserHomeDir()
-	globals := host + userHome
+	pid := os.Getpid()
+	globals := host + userHome + string(rune(pid))
 	sourceString := globals + createEntropy(bigLength)
 
 	return hash(sourceString)[:bigLength]
