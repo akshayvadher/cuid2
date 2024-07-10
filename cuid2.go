@@ -5,6 +5,7 @@ import (
 	"math"
 	"math/big"
 	"math/rand/v2"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -47,7 +48,9 @@ func hash(input string) string {
 }
 
 func createFingerprint() string {
-	globals := "some global a sdfas dfa sdfa sdf asdfa sdfasdf"
+	host, _ := os.Hostname()
+	userHome, _ := os.UserHomeDir()
+	globals := host + userHome
 	sourceString := globals + createEntropy(bigLength)
 
 	return hash(sourceString)[:bigLength]
