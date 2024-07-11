@@ -81,10 +81,6 @@ func createEntropy(length int, random func() float64) string {
 	return entropy.String()
 }
 
-type Options interface {
-	random() float64
-}
-
 func Init(random func() float64, counter func() int64, length int, fingerprint string) func() string {
 	return func() string {
 		firstLetter := randomLetter(random)
