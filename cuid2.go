@@ -12,27 +12,35 @@ import (
 	"time"
 )
 
-var alphabet [26]string
-var counter func() int64
-var fingerprint string
+var (
+	alphabet           [26]string
+	DefaultRandom      func() float64
+	DefaultCounter     func() int64
+	DefaultFingerprint string
+	defaultInit        func() string
+)
 
-// ~22k hosts before 50% chance of initial counter collision
-// with a remaining counter range of 9.0e+15 in JavaScript.
-const initialCountMax = 476782367
-const defaultLength = 24
-const bigLength = 32
-const base = 36
+const (
+	// ~22k hosts before 50% chance of initial counter collision
+	// with a remaining counter range of 9.0e+15 in JavaScript.
+	initialCountMax = 476782367
+	defaultLength   = 24
+	bigLength       = 32
+	base            = 36
+)
 
-func randomLetter() string {
-	return alphabet[rand.IntN(len(alphabet))]
+func randomLetter(random func() float64) string {
+	return alphabet[int(math.Floor(random()*float64(len(alphabet))))]
 }
 
 func init() {
 	for i := 0; i < 26; i++ {
 		alphabet[i] = string([]rune{rune(i + 97)})
 	}
-	counter = createCounter(int64(math.Floor(rand.Float64() * initialCountMax)))
-	fingerprint = createFingerprint()
+	DefaultRandom = rand.Float64
+	DefaultCounter = createCounter(int64(math.Floor(DefaultRandom() * initialCountMax)))
+	DefaultFingerprint = createFingerprint(DefaultRandom)
+	defaultInit = Init(DefaultRandom, DefaultCounter, defaultLength, DefaultFingerprint)
 }
 
 func bufToBigInt(buf [64]byte) string {
@@ -47,12 +55,12 @@ func hash(input string) string {
 	return hash[1:]
 }
 
-func createFingerprint() string {
+func createFingerprint(random func() float64) string {
 	host, _ := os.Hostname()
 	userHome, _ := os.UserHomeDir()
 	pid := os.Getpid()
 	globals := host + userHome + string(rune(pid))
-	sourceString := globals + createEntropy(bigLength)
+	sourceString := globals + createEntropy(bigLength, random)
 
 	return hash(sourceString)[:bigLength]
 }
@@ -64,31 +72,41 @@ func createCounter(count int64) func() int64 {
 	}
 }
 
-func createEntropy(length int) string {
+func createEntropy(length int, random func() float64) string {
 	var entropy strings.Builder
 	for entropy.Len() < length {
-		entropy.WriteString(strconv.FormatInt(int64(math.Floor(rand.Float64()*36)), base))
+		entropy.WriteString(strconv.FormatInt(int64(math.Floor(random()*base)), base))
 	}
 	return entropy.String()
 }
 
+type Options interface {
+	random() float64
+}
+
+func Init(random func() float64, counter func() int64, length int, fingerprint string) func() string {
+	return func() string {
+		firstLetter := randomLetter(random)
+
+		// If we're lucky, the base 36 conversion calls may reduce hashing rounds
+		// by shortening the input to the hash function a little.
+		timeString := strconv.FormatInt(time.Now().UnixMilli(), base)
+		count := strconv.FormatInt(counter(), base)
+
+		// The salt should be long enough to be globally unique across the full
+		// length of the hash. For simplicity, we use the same length as the
+		// intended id output.
+		salt := createEntropy(length, random)
+		hashInput := timeString + salt + count + fingerprint
+		hash := hash(hashInput)
+
+		cuid2 := firstLetter + hash[1:length]
+		return cuid2
+	}
+}
+
 func CreateId() string {
-	firstLetter := randomLetter()
-
-	// If we're lucky, the base 36 conversion calls may reduce hashing rounds
-	// by shortening the input to the hash function a little.
-	timeString := strconv.FormatInt(time.Now().UnixMilli(), base)
-	count := strconv.FormatInt(counter(), base)
-
-	// The salt should be long enough to be globally unique across the full
-	// length of the hash. For simplicity, we use the same length as the
-	// intended id output.
-	salt := createEntropy(defaultLength)
-	hashInput := timeString + salt + count + fingerprint
-	hash := hash(hashInput)
-
-	cuid2 := firstLetter + hash[1:defaultLength]
-	return cuid2
+	return defaultInit()
 }
 
 func IsCuid(id string) bool {

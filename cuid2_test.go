@@ -10,6 +10,9 @@ func create(t *testing.T) string {
 	if id == "" {
 		t.Fatalf("Cuid not generated")
 	}
+	if len(id) != 24 {
+		t.Errorf("Not a default 24 len. Got %d", len(id))
+	}
 	return id
 }
 
@@ -86,4 +89,19 @@ func FuzzTestRandom(f *testing.F) {
 			t.Errorf("Either id or isCuid is wrong for: %s", id)
 		}
 	})
+}
+
+func TestConfigurability(t *testing.T) {
+	random := func() float64 { return 0 }
+	counter := func() int64 { return 0 }
+	length := 3
+	fingerprint := "abc"
+	fn := Init(random, counter, length, fingerprint)
+	id := fn()
+	if id == "" {
+		t.Errorf("Custom function didn't return proper id")
+	}
+	if len(id) != 3 {
+		t.Errorf("Id is not of len 3. Got %d", len(id))
+	}
 }
