@@ -13,11 +13,12 @@ import (
 )
 
 var (
-	alphabet           [26]string
-	DefaultRandom      func() float64
+	alphabet           = [26]string{"a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"}
+	DefaultRandom      = rand.Float64
 	DefaultCounter     func() int64
 	DefaultFingerprint string
 	defaultInit        func() string
+	cuidRegex          = regexp.MustCompile("^[0-9a-z]+$")
 )
 
 const (
@@ -29,18 +30,14 @@ const (
 	base            = 36
 )
 
-func randomLetter(random func() float64) string {
-	return alphabet[int(math.Floor(random()*float64(len(alphabet))))]
-}
-
 func init() {
-	for i := 0; i < 26; i++ {
-		alphabet[i] = string([]rune{rune(i + 97)})
-	}
-	DefaultRandom = rand.Float64
-	DefaultCounter = createCounter(int64(math.Floor(DefaultRandom() * initialCountMax)))
+	DefaultCounter = createCounter(int64(DefaultRandom() * initialCountMax))
 	DefaultFingerprint = createFingerprint(DefaultRandom)
 	defaultInit = Init(DefaultRandom, DefaultCounter, defaultLength, DefaultFingerprint)
+}
+
+func randomLetter(random func() float64) string {
+	return alphabet[int(random()*float64(len(alphabet)))]
 }
 
 func bufToBigInt(buf [64]byte) string {
@@ -52,6 +49,8 @@ func bufToBigInt(buf [64]byte) string {
 func hash(input string) string {
 	sha3Val := sha3.Sum512([]byte(input))
 	hash := bufToBigInt(sha3Val)
+	// Drop the first character because it will bias the histogram
+	// to the left.
 	return hash[1:]
 }
 
@@ -65,15 +64,17 @@ func createFingerprint(random func() float64) string {
 	return hash(sourceString)[:bigLength]
 }
 
-func createCounter(count int64) func() int64 {
+func createCounter(start int64) func() int64 {
+	count := start
 	return func() int64 {
-		count = count + 1
+		count++
 		return count
 	}
 }
 
 func createEntropy(length int, random func() float64) string {
 	var entropy strings.Builder
+	entropy.Grow(length)
 	for entropy.Len() < length {
 		entropy.WriteString(strconv.FormatInt(int64(math.Floor(random()*base)), base))
 	}
@@ -114,9 +115,6 @@ func IsCuid(id string) bool {
 	maxLength := bigLength
 
 	length := len(id)
-	matched, err := regexp.MatchString("^[0-9a-z]+$", id)
-	if err != nil {
-		return false
-	}
+	matched := cuidRegex.MatchString(id)
 	return length >= minLength && length <= maxLength && matched
 }
