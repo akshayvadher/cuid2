@@ -99,37 +99,6 @@ func createIdPool(t *testing.T, max int, poolId int, idPoolResponseChan chan *Id
 		Numbers:   numbers,
 		Histogram: histogram,
 	}
-	//[
-	//	'gob01iailk9wo85wngo9utl7',
-	//	'l17oq34zxavkzkdiofuv78yw',
-	//	's3m2py5t43zchgbapmgce8jt',
-	//	'lzyu4l9m3vl9gbyj43xv37h1',
-	//	'uf7xm6qitz9daz9wqaf2iwnq',
-	//	'f85y5ierg7ymbjjt4nfvpqgn',
-	//	'k33vwiixjbu52ylbmfscyq0c',
-	//	'i391ru4vbrrbknt1svcdi8jl',
-	//	'gxkpvfldrmw36gvve6t0m7hb',
-	//	'hlbfuv8af0hvidb116mvrkkl'
-	//	]
-	//	[
-	//	421076637965657702396533888876329547n,
-	//	21023388091910707503311239917654056n,
-	//	62596244767897073068422938239012553n,
-	//	623114095068307532797266182080895893n,
-	//	263682068288872223753461035218858966n,
-	//	141456873695789619266945784424750391n,
-	//	53842973809059263263798526247740460n,
-	//	56327590941164712490092707510798529n,
-	//	581671461609474457081446176694289247n,
-	//	369315233325587132834055401870579685n
-	//	]
-	//	[
-	//	83147, 83356, 82819, 82762,
-	//	82473, 83516, 82862, 83217,
-	//	83283, 83081, 82593, 83118,
-	//	82926, 82729, 80953, 81034,
-	//	80785, 80423, 81090, 80919
-	//]
 }
 
 func buildHistogram(numbers []*big.Int, bucketCount int) []int64 {
