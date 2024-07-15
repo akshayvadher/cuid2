@@ -1,6 +1,7 @@
 package cuid2
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -36,17 +37,12 @@ func TestFirstCharFromAtoZ(t *testing.T) {
 		}
 		firstChars[i] = firstChar
 	}
-	checkRandomness(firstChars, timesRunTest)
-}
-
-func checkRandomness(chars [100]string, timesRunTest int) {
-	// TODO bestCaseCharTimes := timesRunTest / 26.0
-	// check randomness
 }
 
 func TestIsCuidFalse(t *testing.T) {
 	tests := []string{
-		"", "1", "1", "asdf98923jhf90283jh02983hjf02983fh",
+		"", "1", "1", "asdf98923jhf90283jh02983hjf02983fh", "afasd as dfas ", "1asdfasdf", "   ",
+		CreateId() + CreateId() + CreateId(),
 	}
 	for _, tt := range tests {
 		t.Run(tt, func(t *testing.T) {
@@ -103,5 +99,20 @@ func TestConfigurability(t *testing.T) {
 	}
 	if len(id) != 3 {
 		t.Errorf("Id is not of len 3. Got %d", len(id))
+	}
+}
+
+func TestLength(t *testing.T) {
+	minLen := 2
+	maxLen := 32
+	for tt := minLen; tt <= maxLen; tt++ {
+		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
+			createId := Init(DefaultRandom, DefaultCounter, tt, DefaultFingerprint)
+			id := createId()
+			fmt.Printf("Created id %q\n", id)
+			if len(id) != tt {
+				t.Errorf("Expected id of len %d. Got %d\n", tt, len(id))
+			}
+		})
 	}
 }

@@ -18,7 +18,7 @@ var (
 	DefaultCounter     func() int64
 	DefaultFingerprint string
 	defaultInit        func() string
-	cuidRegex          = regexp.MustCompile("^[0-9a-z]+$")
+	cuidRegex          = regexp.MustCompile("^[a-z][0-9a-z]+$")
 )
 
 const (
