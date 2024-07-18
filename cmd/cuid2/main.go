@@ -24,7 +24,7 @@ func main() {
 				Usage: "Length of the Id (between 2 and 32)",
 				Action: func(ctx *cli.Context, v int) error {
 					if v > 32 || v < 2 {
-						return fmt.Errorf("len %v should be between 2 and 36", v)
+						return fmt.Errorf("len %v should be between 2 and 32", v)
 					}
 					return nil
 				},
