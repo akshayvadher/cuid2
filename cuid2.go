@@ -18,6 +18,7 @@ var (
 	DefaultCounter     func() int64
 	DefaultFingerprint string
 	defaultInit        func() string
+	envVariableKeys    string
 	cuidRegex          = regexp.MustCompile("^[a-z][0-9a-z]+$")
 )
 
@@ -31,9 +32,20 @@ const (
 )
 
 func init() {
+	envVariableKeys = strings.Join(getEnvVariableKeys(), "_")
 	DefaultCounter = createCounter(int64(DefaultRandom() * initialCountMax))
 	DefaultFingerprint = createFingerprint(DefaultRandom)
 	defaultInit = Init(DefaultRandom, DefaultCounter, defaultLength, DefaultFingerprint)
+}
+
+func getEnvVariableKeys() []string {
+	var ek []string
+	for _, e := range os.Environ() {
+		if i := strings.Index(e, "="); i >= 0 {
+			ek = append(ek, e[:i])
+		}
+	}
+	return ek
 }
 
 func randomLetter(random func() float64) string {
@@ -55,10 +67,8 @@ func hash(input string) string {
 }
 
 func createFingerprint(random func() float64) string {
-	host, _ := os.Hostname()
-	userHome, _ := os.UserHomeDir()
 	pid := os.Getpid()
-	globals := host + userHome + string(rune(pid))
+	globals := envVariableKeys + strconv.Itoa(pid)
 	sourceString := globals + createEntropy(bigLength, random)
 
 	return hash(sourceString)[:bigLength]
