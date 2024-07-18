@@ -106,6 +106,10 @@ func CreateId() string {
 	return defaultInit()
 }
 
+func CreateIdOf(len int) string {
+	return Init(DefaultRandom, DefaultCounter, len, DefaultFingerprint)()
+}
+
 func IsCuid(id string) bool {
 	minLength := 2
 	maxLength := bigLength

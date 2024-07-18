@@ -102,13 +102,27 @@ func TestConfigurability(t *testing.T) {
 	}
 }
 
-func TestLength(t *testing.T) {
+func TestLengthWithFullCustomization(t *testing.T) {
 	minLen := 2
 	maxLen := 32
 	for tt := minLen; tt <= maxLen; tt++ {
 		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
 			createId := Init(DefaultRandom, DefaultCounter, tt, DefaultFingerprint)
 			id := createId()
+			fmt.Printf("Created id %q\n", id)
+			if len(id) != tt {
+				t.Errorf("Expected id of len %d. Got %d\n", tt, len(id))
+			}
+		})
+	}
+}
+
+func TestLengthOnlyCustomization(t *testing.T) {
+	minLen := 2
+	maxLen := 32
+	for tt := minLen; tt <= maxLen; tt++ {
+		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
+			id := CreateIdOf(tt)
 			fmt.Printf("Created id %q\n", id)
 			if len(id) != tt {
 				t.Errorf("Expected id of len %d. Got %d\n", tt, len(id))
