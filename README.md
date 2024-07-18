@@ -30,6 +30,10 @@ func main() {
 
 	idWithLength := cuid2.CreateIdOf(10)
 	// zev57ezp7c
+
+	createId := cuid2.Init(customRandomFunction, customCounterFunction, length, customFingerprintString)
+	createId()
+	// this generates id with custom parameters
 }
 ````
 
