@@ -28,7 +28,7 @@ func main() {
 	// to create default length id
 	// us1hfvvf2uyzmh031bav6skw
 
-	idWithLength := cuid2.CreateIdOf(10)
+	idWithLength, err := cuid2.CreateIdOf(10)
 	// zev57ezp7c
 
 	createId := cuid2.Init(customRandomFunction, customCounterFunction, length, customFingerprintString)
