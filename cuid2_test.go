@@ -122,10 +122,22 @@ func TestLengthOnlyCustomization(t *testing.T) {
 	maxLen := 32
 	for tt := minLen; tt <= maxLen; tt++ {
 		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
-			id := CreateIdOf(tt)
+			id, err := CreateIdOf(tt)
 			fmt.Printf("Created id %q\n", id)
-			if len(id) != tt {
+			if len(id) != tt && err == nil {
 				t.Errorf("Expected id of len %d. Got %d\n", tt, len(id))
+			}
+		})
+	}
+}
+
+func TestInvalidLength(t *testing.T) {
+	tests := []int{1, 33, 0, -1}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
+			_, err := CreateIdOf(tt)
+			if err == nil || err.Error() != "len should be between 2 and 32" {
+				t.Errorf("Expected error 'len should be between 2 and 32', got %v", err)
 			}
 		})
 	}

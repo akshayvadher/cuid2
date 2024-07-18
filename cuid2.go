@@ -1,6 +1,7 @@
 package cuid2
 
 import (
+	"errors"
 	"golang.org/x/crypto/sha3"
 	"math"
 	"math/big"
@@ -116,8 +117,11 @@ func CreateId() string {
 	return defaultInit()
 }
 
-func CreateIdOf(len int) string {
-	return Init(DefaultRandom, DefaultCounter, len, DefaultFingerprint)()
+func CreateIdOf(len int) (string, error) {
+	if len < 2 || len > bigLength {
+		return "", errors.New("len should be between 2 and 32")
+	}
+	return Init(DefaultRandom, DefaultCounter, len, DefaultFingerprint)(), nil
 }
 
 func IsCuid(id string) bool {
