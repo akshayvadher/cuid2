@@ -64,6 +64,12 @@ cuid2 -n 3 -len 11
 # ijlk68norem
 # redx1s0adbb
 # mk5zg8dxgi1
+
+cuid2 validate 123
+# not a valid CUID2 "123"
+
+cuid2 validate qf9183tmebd
+# Valid CUID2 "qf9183tmebd"
 ```
 
 # understanding

@@ -36,6 +36,23 @@ func main() {
 			}
 			return nil
 		},
+		Commands: []*cli.Command{
+			{
+				Name:  "validate",
+				Usage: "Validate whether provided CUIID2 is valid or not",
+				Action: func(cCtx *cli.Context) error {
+					argCuid2 := cCtx.Args().First()
+					if argCuid2 == "" {
+						return fmt.Errorf("expected argument to validate command")
+					}
+					if !cuid2.IsCuid(argCuid2) {
+						return fmt.Errorf("not a valid CUID2 %q", argCuid2)
+					}
+					fmt.Printf("Valid CUID2 %q", argCuid2)
+					return nil
+				},
+			},
+		},
 	}
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
