@@ -21,9 +21,9 @@ func main() {
 			&cli.IntFlag{
 				Name:  "len",
 				Value: 24,
-				Usage: "Length of the Id (between 2 and 36)",
+				Usage: "Length of the Id (between 2 and 32)",
 				Action: func(ctx *cli.Context, v int) error {
-					if v > 36 || v < 2 {
+					if v > 32 || v < 2 {
 						return fmt.Errorf("len %v should be between 2 and 36", v)
 					}
 					return nil
