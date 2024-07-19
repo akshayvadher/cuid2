@@ -41,7 +41,7 @@ func testCharFrequency(t *testing.T, n int, ids []string) {
 	// the letter frequency skewed.
 	testIds := make([]string, len(ids))
 	for i, id := range ids {
-		testIds[i] = id[2:]
+		testIds[i] = id[1:]
 	}
 	charFrequencies := make(map[string]int)
 	for _, id := range testIds {
