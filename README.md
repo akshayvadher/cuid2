@@ -23,12 +23,12 @@ import (
 )
 
 func main() {
-	id, err := cuid2.CreateId()
+	id := cuid2.CreateId()
 	fmt.Println(id)
 	// to create default length id
 	// us1hfvvf2uyzmh031bav6skw
 
-	idWithLength, err := cuid2.CreateIdOf(10)
+	idWithLength := cuid2.CreateIdOf(10)
 	// zev57ezp7c
 
 	createId := cuid2.Init(customRandomFunction, customCounterFunction, length, customFingerprintString)

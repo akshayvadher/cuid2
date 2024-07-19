@@ -7,8 +7,8 @@ import (
 )
 
 func create(t *testing.T) string {
-	id, err := CreateId()
-	if id == "" || err != nil {
+	id := CreateId()
+	if id == "" {
 		t.Fatalf("Cuid not generated")
 	}
 	if len(id) != 24 {
@@ -42,18 +42,8 @@ func TestFirstCharFromAtoZ(t *testing.T) {
 func TestIsCuidFalse(t *testing.T) {
 	tests := []string{
 		"", "1", "1", "asdf98923jhf90283jh02983hjf02983fh", "afasd as dfas ", "1asdfasdf", "   ",
+		CreateId() + CreateId() + CreateId(),
 	}
-
-	combinationOfCuids := ""
-	for i := 0; i < 3; i++ {
-		id, err := CreateId()
-		if err != nil {
-			t.Fatalf("Failed to create CUID: %v", err)
-		}
-		combinationOfCuids += id
-	}
-	tests = append(tests, combinationOfCuids)
-
 	for _, tt := range tests {
 		t.Run(tt, func(t *testing.T) {
 			isCuid := IsCuid(tt)
@@ -87,11 +77,7 @@ func TestIsCuidWithValidIds(t *testing.T) {
 func FuzzTestRandom(f *testing.F) {
 	noOfIdsToGenerate := 1000
 	for range noOfIdsToGenerate {
-		id, err := CreateId()
-		if err != nil {
-			f.Fatalf("Failed to create CUID: %v", err)
-		}
-		f.Add(id)
+		f.Add(CreateId())
 	}
 
 	f.Fuzz(func(t *testing.T, id string) {
@@ -107,8 +93,8 @@ func TestConfigurability(t *testing.T) {
 	length := 3
 	fingerprint := "abc"
 	fn := Init(random, counter, length, fingerprint)
-	id, err := fn()
-	if id == "" || err != nil {
+	id := fn()
+	if id == "" {
 		t.Errorf("Custom function didn't return proper id")
 	}
 	if len(id) != 3 {
@@ -122,9 +108,9 @@ func TestLengthWithFullCustomization(t *testing.T) {
 	for tt := minLen; tt <= maxLen; tt++ {
 		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
 			createId := Init(DefaultRandom, DefaultCounter, tt, DefaultFingerprint)
-			id, err := createId()
+			id := createId()
 			fmt.Printf("Created id %q\n", id)
-			if len(id) != tt || err != nil {
+			if len(id) != tt {
 				t.Errorf("Expected id of len %d. Got %d\n", tt, len(id))
 			}
 		})
@@ -136,22 +122,10 @@ func TestLengthOnlyCustomization(t *testing.T) {
 	maxLen := 32
 	for tt := minLen; tt <= maxLen; tt++ {
 		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
-			id, err := CreateIdOf(tt)
+			id := CreateIdOf(tt)
 			fmt.Printf("Created id %q\n", id)
-			if len(id) != tt || err != nil {
+			if len(id) != tt {
 				t.Errorf("Expected id of len %d. Got %d\n", tt, len(id))
-			}
-		})
-	}
-}
-
-func TestInvalidLength(t *testing.T) {
-	tests := []int{1, 33, 0, -1}
-	for _, tt := range tests {
-		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
-			id, err := CreateIdOf(tt)
-			if id != "" || err.Error() != "len should be between 2 and 32" {
-				t.Errorf("Expected error 'len should be between 2 and 32' and Empty ID but got %s with ID=%s\n", err.Error(), id)
 			}
 		})
 	}

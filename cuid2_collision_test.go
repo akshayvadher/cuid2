@@ -66,8 +66,8 @@ func createIdPool(t *testing.T, max int, poolId int, idPoolResponseChan chan *Id
 	defer wg.Done()
 	set := make(map[string]struct{}, max)
 	for i := 0; i < max; i++ {
-		id, err := CreateId()
-		if !IsCuid(id) && err != nil {
+		id := CreateId()
+		if !IsCuid(id) {
 			t.Errorf("The id %s is not a CUID", id)
 			break
 		}
