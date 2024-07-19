@@ -32,6 +32,11 @@ func TestCollision(t *testing.T) {
 		checkHistogram(t, n/numPools, v.Histogram)
 		m.Unlock()
 	}
+	CheckCollision(t, ids)
+	fmt.Printf("Sample ids %v\n", ids[:10])
+}
+
+func CheckCollision(t *testing.T, ids []string) {
 	set := make(map[string]struct{}, len(ids))
 	for _, id := range ids {
 		set[id] = struct{}{}
@@ -39,7 +44,6 @@ func TestCollision(t *testing.T) {
 	if len(set) < len(ids) {
 		t.Errorf("Collision detected. len(set) %d, len(ids) %d", len(set), len(ids))
 	}
-	fmt.Printf("Sample ids %v\n", ids[:10])
 }
 
 func checkHistogram(t *testing.T, numberOfIds int, histogram []int64) {
@@ -63,7 +67,11 @@ type IdPoolResponse struct {
 }
 
 func createIdPool(t *testing.T, max int, poolId int, idPoolResponseChan chan *IdPoolResponse, wg *sync.WaitGroup) {
-	defer wg.Done()
+	idPoolResponseChan <- CreateIdPool(t, max, poolId)
+	wg.Done()
+}
+
+func CreateIdPool(t *testing.T, max int, poolId int) *IdPoolResponse {
 	set := make(map[string]struct{}, max)
 	for i := 0; i < max; i++ {
 		id := CreateId()
@@ -94,7 +102,7 @@ func createIdPool(t *testing.T, max int, poolId int, idPoolResponseChan chan *Id
 	bucketCount := 20
 	histogram := buildHistogram(numbers, bucketCount)
 	fmt.Printf("Histogram created for pool %d\n", poolId)
-	idPoolResponseChan <- &IdPoolResponse{
+	return &IdPoolResponse{
 		Ids:       ids,
 		Numbers:   numbers,
 		Histogram: histogram,
