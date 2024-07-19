@@ -23,7 +23,7 @@ import (
 )
 
 func main() {
-	id := cuid2.CreateId()
+	id, err := cuid2.CreateId()
 	fmt.Println(id)
 	// to create default length id
 	// us1hfvvf2uyzmh031bav6skw
