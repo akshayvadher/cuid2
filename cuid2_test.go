@@ -130,3 +130,19 @@ func TestLengthOnlyCustomization(t *testing.T) {
 		})
 	}
 }
+
+func assertPanic(t *testing.T) {
+	if r := recover(); r == nil {
+		t.Errorf("Expected Panic 'len should be between 2 and 32'\n")
+	}
+}
+
+func TestInvalidLength(t *testing.T) {
+	tests := []int{1, 33, 0, -1}
+	for _, tt := range tests {
+		t.Run(fmt.Sprintf("with length %d", tt), func(t *testing.T) {
+			defer assertPanic(t)
+			_ = CreateIdOf(tt)
+		})
+	}
+}
