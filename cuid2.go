@@ -1,6 +1,7 @@
 package cuid2
 
 import (
+	"errors"
 	"golang.org/x/crypto/sha3"
 	"math"
 	"math/big"
@@ -17,7 +18,7 @@ var (
 	DefaultRandom      = rand.Float64
 	DefaultCounter     func() int64
 	DefaultFingerprint string
-	defaultInit        func() string
+	defaultInit        func() (string, error)
 	envVariableKeys    string
 	cuidRegex          = regexp.MustCompile("^[a-z][0-9a-z]+$")
 )
@@ -91,8 +92,16 @@ func createEntropy(length int, random func() float64) string {
 	return entropy.String()
 }
 
-func Init(random func() float64, counter func() int64, length int, fingerprint string) func() string {
-	return func() string {
+func Init(random func() float64, counter func() int64, length int, fingerprint string) func() (string, error) {
+	return func() (string, error) {
+		minLength := 2
+		maxLength := bigLength
+
+		// Ensure length is between 2 and 32
+		if length < minLength || length > maxLength {
+			return "", errors.New("len should be between 2 and 32")
+		}
+
 		firstLetter := randomLetter(random)
 
 		// If we're lucky, the base 36 conversion calls may reduce hashing rounds
@@ -108,15 +117,15 @@ func Init(random func() float64, counter func() int64, length int, fingerprint s
 		hash := hash(hashInput)
 
 		cuid2 := firstLetter + hash[1:length]
-		return cuid2
+		return cuid2, nil
 	}
 }
 
-func CreateId() string {
+func CreateId() (string, error) {
 	return defaultInit()
 }
 
-func CreateIdOf(len int) string {
+func CreateIdOf(len int) (string, error) {
 	return Init(DefaultRandom, DefaultCounter, len, DefaultFingerprint)()
 }
 
