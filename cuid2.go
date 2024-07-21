@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -33,7 +34,7 @@ const (
 
 func init() {
 	envVariableKeys = strings.Join(getEnvVariableKeys(), "_")
-	DefaultCounter = createCounter(int64(DefaultRandom() * initialCountMax))
+	DefaultCounter = CreateCounter(int64(DefaultRandom() * initialCountMax))
 	DefaultFingerprint = createFingerprint(DefaultRandom)
 	defaultInit = Init(DefaultRandom, DefaultCounter, defaultLength, DefaultFingerprint)
 }
@@ -74,11 +75,12 @@ func createFingerprint(random func() float64) string {
 	return hash(sourceString)[:bigLength]
 }
 
-func createCounter(start int64) func() int64 {
-	count := start
+func CreateCounter(start int64) func() int64 {
+	count := atomic.Int64{}
+	count.Store(start)
 	return func() int64 {
-		count++
-		return count
+		defer count.Add(1)
+		return count.Load()
 	}
 }
 

@@ -3,6 +3,7 @@ package cuid2
 import (
 	"fmt"
 	"strings"
+	"sync"
 	"testing"
 )
 
@@ -144,5 +145,42 @@ func TestInvalidLength(t *testing.T) {
 			defer assertPanic(t)
 			_ = CreateIdOf(tt)
 		})
+	}
+}
+
+func TestCounterThreadSafe(t *testing.T) {
+	var n int64 = 1_00_00_000
+	pool := 10
+	counter := DefaultCounter
+	initialCount := counter()
+	wg := &sync.WaitGroup{}
+	for range pool {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			countTimes := n / int64(pool)
+			for range countTimes {
+				counter()
+			}
+		}()
+	}
+	wg.Wait()
+	finalCount := counter()
+	expectedCount := n + 1 // because we are counting after the loop as well.
+	if finalCount-initialCount != expectedCount {
+		t.Errorf("Counter should be increamented by %d times but got %d. For initial value %d and final value %d",
+			expectedCount, finalCount-initialCount, initialCount, finalCount)
+	}
+}
+
+func TestCounterWithInitialValue(t *testing.T) {
+	start := int64(10)
+	counter := CreateCounter(start)
+	for i := range 100 {
+		c := counter()
+		want := start + int64(i)
+		if c != want {
+			t.Errorf("Counter is not properly incrementing. Got %d, wanted %d", c, want)
+		}
 	}
 }
