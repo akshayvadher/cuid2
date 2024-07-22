@@ -94,14 +94,12 @@ func createEntropy(length int, random func() float64) string {
 }
 
 func Init(random func() float64, counter func() int64, length int, fingerprint string) func() string {
+	minLength := 2
+	maxLength := bigLength
+	if length < minLength || length > maxLength {
+		panic("len should be between 2 and 32")
+	}
 	return func() string {
-		minLength := 2
-		maxLength := bigLength
-
-		if length < minLength || length > maxLength {
-			panic("len should be between 2 and 32")
-		}
-
 		firstLetter := randomLetter(random)
 
 		// If we're lucky, the base 36 conversion calls may reduce hashing rounds
