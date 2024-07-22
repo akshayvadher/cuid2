@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -33,7 +34,7 @@ const (
 
 func init() {
 	envVariableKeys = strings.Join(getEnvVariableKeys(), "_")
-	DefaultCounter = createCounter(int64(DefaultRandom() * initialCountMax))
+	DefaultCounter = CreateCounter(int64(DefaultRandom() * initialCountMax))
 	DefaultFingerprint = createFingerprint(DefaultRandom)
 	defaultInit = Init(DefaultRandom, DefaultCounter, defaultLength, DefaultFingerprint)
 }
@@ -74,11 +75,14 @@ func createFingerprint(random func() float64) string {
 	return hash(sourceString)[:bigLength]
 }
 
-func createCounter(start int64) func() int64 {
-	count := start
+func CreateCounter(start int64) func() int64 {
+	count := atomic.Int64{}
+	// `-1` because, we wanted the counter to start from the value it set!
+	// This is not essential for randomness.
+	// An alternative of `count++` (return first and increment later) operator
+	count.Store(start - 1)
 	return func() int64 {
-		count++
-		return count
+		return count.Add(1)
 	}
 }
 
@@ -92,14 +96,12 @@ func createEntropy(length int, random func() float64) string {
 }
 
 func Init(random func() float64, counter func() int64, length int, fingerprint string) func() string {
+	minLength := 2
+	maxLength := bigLength
+	if length < minLength || length > maxLength {
+		panic("len should be between 2 and 32")
+	}
 	return func() string {
-		minLength := 2
-		maxLength := bigLength
-
-		if length < minLength || length > maxLength {
-			panic("len should be between 2 and 32")
-		}
-
 		firstLetter := randomLetter(random)
 
 		// If we're lucky, the base 36 conversion calls may reduce hashing rounds
