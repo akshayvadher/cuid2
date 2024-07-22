@@ -28,7 +28,7 @@ func TestGeneratesCuid2(t *testing.T) {
 
 func TestFirstCharFromAtoZ(t *testing.T) {
 	atoz := "abcdefghijklmnopqrstuvwxyz"
-	const timesRunTest = 100
+	const timesRunTest = 10000
 	var firstChars [timesRunTest]string
 	for i := range timesRunTest {
 		id := create(t)
