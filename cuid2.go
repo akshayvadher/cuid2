@@ -77,10 +77,12 @@ func createFingerprint(random func() float64) string {
 
 func CreateCounter(start int64) func() int64 {
 	count := atomic.Int64{}
-	count.Store(start)
+	// `-1` because, we wanted the counter to start from the value it set!
+	// This is not essential for randomness.
+	// An alternative of `count++` (return first and increment later) operator
+	count.Store(start - 1)
 	return func() int64 {
-		defer count.Add(1)
-		return count.Load()
+		return count.Add(1)
 	}
 }
 
